@@ -1,55 +1,69 @@
 from tkinter import *
-import time
+
 root = Tk()
 
-def cacl(input_str):
-	if "x" in input_str:
-		ret = input_str.split("x")
-	return int(ret[0]) * int(ret[1])
+labelframe = Frame(root)
+labelframe.grid()
 
-def callback(n):
-	print(n)
+keyframe = Frame(root)
+keyframe.grid()
 
-def callback1(n):
-	print(n)
+operatorframe = Frame(root)
+operatorframe.grid()
 
-class App:
-	def __init__(self, master):
-		frame1 = Frame(master)
-		frame1.pack()
-		frame = Frame(master)
-		frame.pack()
-		Button(frame, text="1",command=lambda: callback(1) ).grid(row=0,column=0)
-		Button(frame, text="2",command=lambda: callback(2) ).grid(row=0,column=1)
-		Button(frame, text="3",command=lambda: callback(3) ).grid(row=0,column=2)
-		Button(frame, text="4",command=lambda: callback(4) ).grid(row=1,column=0)
-		Button(frame, text="5",command=lambda: callback(5) ).grid(row=1,column=1)
-		Button(frame, text="6",command=lambda: callback(6) ).grid(row=1,column=2)
-		Button(frame, text="7",command=lambda: callback(7) ).grid(row=2,column=0)
-		Button(frame, text="8",command=lambda: callback(8) ).grid(row=2,column=1)
-		Button(frame, text="9",command=lambda: callback(9) ).grid(row=2,column=2)
-		Button(frame, text="0",command=lambda: callback(0) ).grid(row=3,column=0)
-		Button(frame, text="+",command=lambda: callback1("+") ).grid(row=3,column=1)
-		Button(frame, text="-",command=lambda: callback1("-") ).grid(row=3,column=2)
-		Button(frame, text="*",command=lambda: callback1("*") ).grid(row=4,column=1)
-		Button(frame, text="/",command=lambda: callback1("/") ).grid(row=4,column=2)
-		Button(frame, text="=", command=self.say_hi).grid(row=4,column=0)
-		w = Label(frame1,text="Input:")
-		w.pack()
-		self.e = Entry(frame1)
-		self.e.pack(padx=5)
-		w1 = Label(frame1,text="Output:")
-		w1.pack()
-		v = StringVar()
-		e1 = Entry(frame1, textvariable=v)
-		v.set("")
-		self.v = v
-		e1.pack()
+clearframe = Frame(root)
+clearframe.grid()
+
+class Application(Frame):
+	def __init__(self, master=None):
+		Frame.__init__(self, master)
+		self.grid()
+		self.createWidgets()
 		
-	def say_hi(self):
-		print("hi there, everyone!",self.e.get())
-		input_str = self.e.get()
-		self.v.set(cacl(input_str))
+	def createWidgets(self, master=None):		
 		
-app = App(root)
-root.mainloop()
+		display = StringVar()
+		Label(labelframe, text="Input", width=10).grid(row=0, column=0, sticky=W)
+		Entry(labelframe, relief=SUNKEN, textvariable=display, width=22).grid(row=0, column=1, columnspan=3, sticky=W)
+		result = StringVar()
+		Label(labelframe, text="Output", width=10).grid(row=1, column=0, sticky=W)
+		Entry(labelframe, relief=SUNKEN, textvariable=result, width=22).grid(row=1, column=1, columnspan=3, sticky=W)
+
+		i=0
+		#keyDict={0:'0', 1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'8', 9:'9', 10:'.', 11:'-'}
+		#for i, key in keyDict.items():
+		for key in "1234567890-.":
+			Button(keyframe, text=key, width=10, command=lambda dp=display, c=key:dp.set(dp.get() + c)).grid(row=i//3, column=i%3, padx=0)
+			i = i+1
+		
+		j = 0
+		for char in '+-*/=':
+			if char == '=':
+				operatorbtn = Button(operatorframe, text=char, width=5)
+				operatorbtn.grid(row=0, column=j, ipadx=1, padx=1, sticky=W)
+				operatorbtn.bind('<ButtonRelease-1>', lambda e, dp=display, rst=result:self.calc(dp, rst), '+')
+				
+			else:
+				operatorbtn = Button(operatorframe, text=char, width=5, command=lambda dp=display, c='%s'%char:dp.set(dp.get() + c))
+				if 0<j<5: px=2
+				else: px=0
+				operatorbtn.grid(row=0, column=j, ipadx=0, padx=px, sticky=W)
+			
+			j = j + 1
+
+		clearbtn = Button(clearframe, text='clear', width=32, command=lambda dp=display, rst=result:self.clear(dp, rst))
+		clearbtn.grid(ipadx=3)
+	
+	def calc(self, display, result):
+		try:
+			result.set(eval(display.get()))
+		except:
+			result.set("ERROR")
+			
+	def clear(self, display, result):
+		display.set('')
+		result.set('')
+
+app=Application()
+app.master.title("Sample application")
+app.mainloop()
